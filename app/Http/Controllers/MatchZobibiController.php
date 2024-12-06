@@ -8,214 +8,152 @@ use App\Models\Matches;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class MatchZobibiController extends Controller
 {
     public function index()
     {
-        $totalCities = City::count();
-        $totalRegions = Region::count();
+        // Récupérer toutes les régions
         $regions = Region::all();
-
-        // Log des informations de base
-        Log::info('Page Zobibi initialisée', [
-            'total_cities' => $totalCities,
-            'total_regions' => $totalRegions,
-            'regions' => $regions->pluck('name')
+        
+        // Log pour le débogage
+        Log::info('Initialisation de la page Zobibi', [
+            'regions_count' => $regions->count(),
+            'cities_count' => City::count()
         ]);
 
-        return view('zobibi', compact('regions', 'totalCities', 'totalRegions'));
+        return view('zobibi', compact('regions'));
     }
 
     public function genererMatch(Request $request)
     {
-        // Log des données de la requête entrante
-        Log::info('Tentative de génération de match Zobibi', [
-            'regions_input' => $request->only(['region1', 'region2'])
-        ]);
-
         try {
-            // Validation des régions
-            $validatedData = $request->validate([
-                'region1' => 'required|different:region2',
-                'region2' => 'required'
+            // Validation robuste des régions
+            $request->validate([
+                'region1' => [
+                    'required', 
+                    'exists:regions,name',
+                    function ($attribute, $value, $fail) use ($request) {
+                        if ($value === $request->region2) {
+                            $fail('Les deux régions doivent être différentes.');
+                        }
+                    }
+                ],
+                'region2' => [
+                    'required', 
+                    'exists:regions,name',
+                    function ($attribute, $value, $fail) use ($request) {
+                        if ($value === $request->region1) {
+                            $fail('Les deux régions doivent être différentes.');
+                        }
+                    }
+                ]
             ]);
 
-            // Log après validation
-            Log::info('Régions validées', $validatedData);
+            // Vérifier que les tables ne sont pas vides
+            if (Region::count() == 0 || City::count() == 0) {
+                throw new \Exception('Aucune région ou ville trouvée en base de données');
+            }
 
             DB::beginTransaction();
 
             // Trouver les régions
-            $region1 = Region::where('name', $request->region1)->first();
-            $region2 = Region::where('name', $request->region2)->first();
+            $region1 = Region::where('name', $request->region1)->firstOrFail();
+            $region2 = Region::where('name', $request->region2)->firstOrFail();
 
-            // Log des régions trouvées
-            Log::info('Régions trouvées', [
-                'region1' => $region1 ? $region1->toArray() : 'Non trouvée',
-                'region2' => $region2 ? $region2->toArray() : 'Non trouvée'
-            ]);
+            // Trouver les villes qui n'ont pas encore été utilisées dans un match
+            $usedCityIds = Matches::pluck('city1_id')->merge(Matches::pluck('city2_id'));
 
-            // Villes qui n'ont pas encore hébergé de match Zobibi
-            $unusedCities = City::whereDoesntHave('matches', function($query) {
-                $query->where('type', 'Zobibi');
-            })->get();
+            // Villes de chaque région non utilisées
+            $region1Cities = City::where('region_id', $region1->id)
+                ->whereNotIn('id', $usedCityIds)
+                ->get();
 
-            // Log des villes non utilisées
-            Log::info('Villes non utilisées', [
-                'count' => $unusedCities->count(),
-                'city_ids' => $unusedCities->pluck('id'),
-                'city_names' => $unusedCities->pluck('name')
-            ]);
+            $region2Cities = City::where('region_id', $region2->id)
+                ->whereNotIn('id', $usedCityIds)
+                ->get();
 
-            // Si toutes les villes ont été utilisées, réinitialiser
-            if ($unusedCities->isEmpty()) {
-                Log::warning('Toutes les villes ont été utilisées. Réinitialisation en cours.');
-
-                // Supprimer tous les matchs Zobibi précédents
-                Matches::where('type', 'Zobibi')->delete();
-                
-                // Réinitialiser avec toutes les villes
-                $unusedCities = City::all();
-                
-                // Réinitialiser le compteur d'hébergement
-                City::query()->update([
-                    'has_hosted' => false, 
-                    'hosting_count' => 0
-                ]);
+            // Si toutes les villes d'une région ont été utilisées, réinitialiser cette région
+            if ($region1Cities->isEmpty()) {
+                $region1Cities = City::where('region_id', $region1->id)->get();
             }
 
-            // Sélectionner les villes
-            $selectedCities = $this->selectCitiesDifferentRegions(
-                collect([$region1, $region2]), 
-                $unusedCities
-            );
-
-            // Log de la sélection des villes
-            Log::info('Villes sélectionnées', [
-                'city1' => $selectedCities['city1'] ? $selectedCities['city1']->toArray() : 'Aucune',
-                'city2' => $selectedCities['city2'] ? $selectedCities['city2']->toArray() : 'Aucune'
-            ]);
-
-            if (!$selectedCities) {
-                throw new \Exception('Impossible de trouver des villes correspondantes');
+            if ($region2Cities->isEmpty()) {
+                $region2Cities = City::where('region_id', $region2->id)->get();
             }
 
-            // Créer un nouvel enregistrement de match
+            // Vérifier qu'il y a des villes disponibles
+            if ($region1Cities->isEmpty() || $region2Cities->isEmpty()) {
+                throw new \Exception('Pas de villes disponibles dans l\'une des régions');
+            }
+
+            // Sélectionner une ville au hasard dans chaque région
+            $ville1 = $region1Cities->random();
+            $ville2 = $region2Cities->random();
+
+            // Créer le match
             $match = Matches::create([
-                'city1_id' => $selectedCities['city1']->id,
-                'city2_id' => $selectedCities['city2']->id,
-                'type' => 'Zobibi',
-                'match_date' => now()
+                'city1_id' => $ville1->id,
+                'city2_id' => $ville2->id
             ]);
-
-            // Log de création du match
-            Log::info('Match Zobibi créé', [
-                'match_id' => $match->id,
-                'city1_id' => $match->city1_id,
-                'city2_id' => $match->city2_id
-            ]);
-
-            // Mettre à jour le statut d'hébergement des villes
-            $selectedCities['city1']->increment('hosting_count');
-            $selectedCities['city1']->update(['has_hosted' => true]);
-            $selectedCities['city2']->increment('hosting_count');
-            $selectedCities['city2']->update(['has_hosted' => true]);
 
             DB::commit();
 
-            // Log de succès
+            // Logging pour le débogage
             Log::info('Match Zobibi généré avec succès', [
-                'ville1' => $selectedCities['city1']->name,
-                'region1' => $selectedCities['city1']->region->name,
-                'ville2' => $selectedCities['city2']->name,
-                'region2' => $selectedCities['city2']->region->name
+                'ville1' => $ville1->name,
+                'region1' => $region1->name,
+                'ville2' => $ville2->name,
+                'region2' => $region2->name
             ]);
 
             return response()->json([
-                'success' => true,
-                'ville1' => $selectedCities['city1']->name,
-                'region1' => $selectedCities['city1']->region->name,
-                'ville2' => $selectedCities['city2']->name,
-                'region2' => $selectedCities['city2']->region->name
+                'ville1' => $ville1->name,
+                'region1' => $region1->name,
+                'ville2' => $ville2->name,
+                'region2' => $region2->name
             ]);
+
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            Log::error('Erreur de validation', [
+                'errors' => $e->errors()
+            ]);
+
+            return response()->json([
+                'error' => $e->errors()
+            ], 422);
 
         } catch (\Exception $e) {
             DB::rollBack();
-
-            // Log détaillé de l'erreur
-            Log::error('Erreur de génération de match Zobibi', [
+            Log::error('Erreur de génération de match', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'input_regions' => $request->only(['region1', 'region2'])
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
-                'success' => false,
-                'erreur' => 'Impossible de générer le match. ' . $e->getMessage()
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Sélectionner des villes de régions différentes
-     */
-    private function selectCitiesDifferentRegions($regions, $unusedCities)
-    {
-        // Log du début de la sélection
-        Log::info('Début de sélection des villes', [
-            'regions_ids' => $regions->pluck('id'),
-            'unused_cities_count' => $unusedCities->count()
-        ]);
-
-        $regions = $regions->shuffle();
-
-        foreach ($regions as $region1) {
-            $region1Cities = $unusedCities->where('region_id', $region1->id);
-
-            foreach ($regions as $region2) {
-                if ($region1->id === $region2->id) {
-                    continue;
-                }
-
-                $region2Cities = $unusedCities->where('region_id', $region2->id);
-
-                // Log de la recherche
-                Log::info('Recherche de villes', [
-                    'region1_id' => $region1->id,
-                    'region2_id' => $region2->id,
-                    'region1_cities_count' => $region1Cities->count(),
-                    'region2_cities_count' => $region2Cities->count()
-                ]);
-
-                if ($region1Cities->isNotEmpty() && $region2Cities->isNotEmpty()) {
-                    return [
-                        'city1' => $region1Cities->random(),
-                        'city2' => $region2Cities->random(),
-                    ];
-                }
-            }
-        }
-
-        // Log si aucune ville n'est trouvée
-        Log::warning('Aucune ville trouvée pour les régions données');
-
-        return null;
-    }
-
-    /**
-     * Historique des matchs Zobibi
-     */
     public function historique()
     {
-        $matches = Matches::where('type', 'Zobibi')
-            ->with(['city1', 'city2'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        // Récupérer les matchs avec leurs villes et régions, par ordre décroissant
+        $matches = Matches::with(['city1.region', 'city2.region'])
+            ->latest()
+            ->paginate(10); // 10 matchs par page
 
-        return response()->json([
-            'matches' => $matches,
-            'total_matches' => $matches->total()
-        ]);
+        return view('zobibi-historique', compact('matches'));
+    }
+
+    // Méthode pour réinitialiser les matchs
+    public function reinitialiserMatchs()
+    {
+        Matches::truncate(); // Supprime tous les matchs
+        
+        return redirect()->route('zobibi-historique')
+            ->with('success', 'Tous les matchs ont été réinitialisés.');
     }
 }

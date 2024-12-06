@@ -134,13 +134,11 @@ class KpessekouMatchController extends Controller
      */
     public function matchHistory()
     {
-        $matches = Matches::with(['city1', 'city2'])
+        $matches = Matches::with(['city1.region', 'city2.region'])
+            ->where('type', 'Kpessekou')  // Assurez-vous de filtrer par type
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-
-        return response()->json([
-            'matches' => $matches,
-            'total_matches' => $matches->total()
-        ]);
+    
+        return view('kpessekou-historique', compact('matches'));
     }
 }

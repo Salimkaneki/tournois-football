@@ -6,29 +6,27 @@
 <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
     <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">🎲 Génération d'un match Zobibi</h2>
     
-    <p class="text-gray-600 mb-6 text-center">Choisissez deux régions pour générer un match.</p>
+    <p class="text-gray-600 mb-6 text-center">Choisissez deux régions différentes pour générer un match.</p>
     
     <form id="zobibi-form" class="space-y-4">
         @csrf
         <div>
             <label for="region1" class="block text-sm font-medium text-gray-700 mb-2">Région 1</label>
-            <select id="region1" name="region1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="Maritime">Maritime</option>
-                <option value="Plateaux">Plateaux</option>
-                <option value="Centrale">Centrale</option>
-                <option value="Kara">Kara</option>
-                <option value="Savanes">Savanes</option>
+            <select id="region1" name="region1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <option value="">Sélectionnez une région</option>
+                @foreach($regions as $region)
+                    <option value="{{ $region->name }}">{{ $region->name }}</option>
+                @endforeach
             </select>
         </div>
         
         <div>
             <label for="region2" class="block text-sm font-medium text-gray-700 mb-2">Région 2</label>
-            <select id="region2" name="region2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="Maritime">Maritime</option>
-                <option value="Plateaux">Plateaux</option>
-                <option value="Centrale">Centrale</option>
-                <option value="Kara">Kara</option>
-                <option value="Savanes">Savanes</option>
+            <select id="region2" name="region2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <option value="">Sélectionnez une région</option>
+                @foreach($regions as $region)
+                    <option value="{{ $region->name }}">{{ $region->name }}</option>
+                @endforeach
             </select>
         </div>
         
@@ -50,23 +48,29 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('zobibi-form');
     const resultDiv = document.getElementById('resultat');
-
-    // Validation des régions différentes
     const region1Select = document.getElementById('region1');
     const region2Select = document.getElementById('region2');
 
+    // Validation des régions différentes
+    region1Select.addEventListener('change', function() {
+        // Désactiver l'option sélectionnée dans l'autre select
+        Array.from(region2Select.options).forEach(option => {
+            option.disabled = (option.value === this.value);
+        });
+    });
+
     region2Select.addEventListener('change', function() {
-        if (region1Select.value === region2Select.value) {
-            alert('Veuillez sélectionner deux régions différentes');
-            region2Select.value = '';
-        }
+        // Désactiver l'option sélectionnée dans l'autre select
+        Array.from(region1Select.options).forEach(option => {
+            option.disabled = (option.value === this.value);
+        });
     });
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Vérification finale des régions
-        if (region1Select.value === region2Select.value) {
+        // Validation finale
+        if (!region1Select.value || !region2Select.value) {
             alert('Veuillez sélectionner deux régions différentes');
             return;
         }
@@ -87,17 +91,15 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('{{ route('generer-match-zobibi') }}', {
             method: 'POST',
             headers: {
-                'Accept': 'application/json',
                 'X-CSRF-TOKEN': formData.get('_token')
             },
-            body: JSON.stringify({
-                region1: formData.get('region1'),
-                region2: formData.get('region2')
-            })
+            body: formData
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Erreur de génération du match');
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Erreur de génération du match');
+                });
             }
             return response.json();
         })

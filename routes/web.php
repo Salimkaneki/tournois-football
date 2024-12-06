@@ -38,12 +38,14 @@ Route::post('/generate-kpessekou-match', [KpessekouMatchController::class, 'gene
 
 
 
-// Optional: Route to get match history
-Route::get('/kpessekou-history', [KpessekouMatchController::class, 'matchHistory'])
-    ->name('kpessekou.history');
+Route::get('/kpessekou-history', [KpessekouMatchController::class, 'matchHistory'])->name('kpessekou.history');
 
-    Route::get('/match-generator', [MatchGeneratorController::class, 'index'])->name('match.index');
-Route::post('/generer-match', [MatchGeneratorController::class, 'genererMatch'])->name('match.generer');
 
-Route::get('/match-zobibi', [MatchZobibiController::class, 'index']);
+Route::get('/zobibi', [MatchZobibiController::class, 'index'])->name('zobibi.index');
 Route::post('/generer-match-zobibi', [MatchZobibiController::class, 'genererMatch'])->name('generer-match-zobibi');
+
+Route::get('/zobibi/historique', [MatchZobibiController::class, 'historique'])->name('zobibi-historique');
+Route::post('/zobibi/reinitialiser', [MatchZobibiController::class, 'reinitialiserMatchs'])->name('reinitialiser-matchs');
+
+Route::get('/kpessekou/historique', [KpessekouMatchController::class, 'matchHistory'])
+    ->name('kpessekou.historique');

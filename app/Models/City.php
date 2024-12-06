@@ -21,12 +21,13 @@ class City extends Model
     // }
 
     public function region()
-{
-    return $this->belongsTo(Region::class);
-}
+    {
+        return $this->belongsTo(Region::class);
+    }
 
-public function matches()
-{
-    return $this->hasMany(Matches::class, 'city1_id')->orWhere('city2_id', $this->id);
-}
+    public function matches()
+    {
+        return $this->hasMany(Matches::class, 'city1_id')->orWhere('city2_id', $this->id);
+    }
+
 }
