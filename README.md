@@ -1,4 +1,6 @@
 # Togolese Soccer Tournament Host City Generator
+![Couverture](public/images/Capture_ftf-app-web.png)
+
 
 Application web développée pour la Fédération Togolaise de Football (FTF) pour la sélection impartiale et aléatoire des villes hôtes des matchs du tournoi national de football.
 
