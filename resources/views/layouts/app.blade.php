@@ -17,38 +17,35 @@
                     <h1 class="text-3xl font-extrabold tracking-tight">Tournoi de Football</h1>
                 </div>
                 
-                <!-- Menu Mobile Toggle -->
                 <div class="md:hidden">
                     <button id="mobile-menu-toggle" class="text-white focus:outline-none">
                         <i class="ri-menu-line text-2xl"></i>
                     </button>
                 </div>
 
-                <!-- Navigation -->
                 <nav class="hidden md:flex space-x-6">
-                    <a href="#" class="px-4 py-2 rounded-lg transition duration-300 hover:bg-green-600 hover:bg-opacity-50 flex items-center">
+                    <a href="{{ route('menu.view') }}" class="px-4 py-2 rounded-lg transition duration-300 hover:bg-green-600 hover:bg-opacity-50 flex items-center">
                         <i class="ri-home-line mr-2"></i>Accueil
                     </a>
-                    <a href="#" class="px-4 py-2 rounded-lg transition duration-300 hover:bg-green-600 hover:bg-opacity-50 flex items-center">
-                        <i class="ri-team-line mr-2"></i>Équipes
+                    <a href="{{ route('kpessekou.index') }}" class="px-4 py-2 rounded-lg transition duration-300 hover:bg-green-600 hover:bg-opacity-50 flex items-center">
+                        <i class="ri-football-line mr-2"></i>Kpessekou
                     </a>
-                    <a href="#" class="px-4 py-2 rounded-lg transition duration-300 hover:bg-green-600 hover:bg-opacity-50 flex items-center">
-                        <i class="ri-bar-chart-line mr-2"></i>Résultats
+                    <a href="{{ route('zobibi.index') }}" class="px-4 py-2 rounded-lg transition duration-300 hover:bg-green-600 hover:bg-opacity-50 flex items-center">
+                        <i class="ri-team-line mr-2"></i>Zobibi
                     </a>
                 </nav>
             </div>
 
-            <!-- Mobile Menu (Hidden by Default) -->
             <div id="mobile-menu" class="md:hidden hidden bg-green-800 absolute inset-x-0 z-20">
                 <nav class="px-4 pt-2 pb-4 space-y-2">
-                    <a href="#" class="block px-4 py-2 rounded hover:bg-green-700 flex items-center">
+                    <a href="{{ route('menu.view') }}" class="block px-4 py-2 rounded hover:bg-green-700 flex items-center">
                         <i class="ri-home-line mr-2"></i>Accueil
                     </a>
-                    <a href="#" class="block px-4 py-2 rounded hover:bg-green-700 flex items-center">
-                        <i class="ri-team-line mr-2"></i>Équipes
+                    <a href="{{ route('kpessekou.index') }}" class="block px-4 py-2 rounded hover:bg-green-700 flex items-center">
+                        <i class="ri-football-line mr-2"></i>Kpessekou
                     </a>
-                    <a href="#" class="block px-4 py-2 rounded hover:bg-green-700 flex items-center">
-                        <i class="ri-bar-chart-line mr-2"></i>Résultats
+                    <a href="{{ route('zobibi.index') }}" class="block px-4 py-2 rounded hover:bg-green-700 flex items-center">
+                        <i class="ri-team-line mr-2"></i>Zobibi
                     </a>
                 </nav>
             </div>
