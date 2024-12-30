@@ -84,7 +84,6 @@
             </div>
         </div>
 
-        {{-- Pagination améliorée --}}
         <div class="mt-8">
             <div class="flex justify-between items-center">
                 <div class="text-gray-600 text-sm bg-green-50 px-4 py-2 rounded-md">

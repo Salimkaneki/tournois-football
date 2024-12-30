@@ -20,19 +20,6 @@ Route::get('/', function () {
 })->name('menu.view');
 
 
-
-// Route::get('/zobibi', function () {
-//     return view('zobibi');
-// })->name('zobibi.view');
-
-// Route::get('/stats', function () {
-//     return view('statistiques');
-// })->name('stats.view');
-
-// Route::get('/reset', function () {
-//     return view('reset');
-// })->name('reset.view');
-
 Route::get('/kpessekou', [KpessekouMatchController::class, 'index'])->name('kpessekou.index');
 Route::post('/generate-kpessekou-match', [KpessekouMatchController::class, 'generateMatch'])->name('generate.kpessekou');
 
