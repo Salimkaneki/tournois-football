@@ -1,66 +1,93 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Togolese Soccer Tournament Host City Generator
+![Couverture](public/images/Capture_ftf-app-web.png)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
 
-## About Laravel
+Application web développée pour la Fédération Togolaise de Football (FTF) pour la sélection impartiale et aléatoire des villes hôtes des matchs du tournoi national de football.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Objectif de l'application
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Cette application vise à :  
+1. Générer des paires de villes pour les matchs de **Kpessekou** (playoffs) en respectant des règles d'exclusivité par région et ville.  
+2. Permettre aux utilisateurs de sélectionner des régions pour les matchs de **Zobibi** (demi-finales et finale), avec attribution aléatoire des villes au sein des régions sélectionnées.  
 
-## Learning Laravel
+L'objectif est de garantir une répartition équitable et aléatoire des matchs dans les différentes villes et régions du Togo.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Fonctionnalités
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Kpessekou (Playoffs)** :  
+  - Génération aléatoire de paires de villes.  
+  - Garantit que chaque ville et région est utilisée au moins une fois avant répétition.
 
-## Laravel Sponsors
+- **Zobibi (Semi-Finales et Finale)** :  
+  - Sélection des régions par l'utilisateur.  
+  - Attribution aléatoire des villes dans les régions sélectionnées.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## Installation du projet (Laravel)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Prérequis
 
-## Contributing
+1. PHP >= 8.1  
+2. Composer installé  
+3. Serveur web local (comme XAMPP, Laragon, ou WAMP)  
+4. MySQL ou tout autre SGBD compatible Laravel  
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Étapes d'installation
 
-## Code of Conduct
+1. **Clonez le projet :**  
+   ```bash
+   git clone https://github.com/Salimkaneki/tournois-football.git
+   cd tournois-football
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+    **Copiez et configurez le fichier .env :**
 
-## Security Vulnerabilities
+    ```bash
+    cp .env.example .env
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+2. **Modifiez le fichier .env pour y ajouter vos informations de base de données :**
 
-## License
+    ```bash
+    cp .env.example .env
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+        DB_CONNECTION=mysql
+        DB_HOST=127.0.0.1
+        DB_PORT=3306
+        DB_DATABASE=ftf_tournament
+        DB_USERNAME=root
+        DB_PASSWORD=
+3. **Installez les dépendances :**
+
+    ```bash
+    composer install
+
+4. **Exécutez les migrations et seeders pour initialiser la base de données :**
+
+    ```bash
+    php artisan migrate
+    php artisan db:seed
+
+5. Lancez le serveur local :
+
+    ```bash
+    php artisan serve
+
+Accédez à l'application via http://localhost:8000.
+
+
+## Technologies utilisées 
+- Backend : Laravel 10
+- Base de données : MySQL
+- Frontend : Blade Templating (avec Tailwind pour le style, Highlight.js)
+- Gestion des dépendances : Composer
+## Comment utiliser l'application
+
+- Accédez à l'interface utilisateur via http://localhost:8000.
+- Choisissez le type de match :
+- Kpessekou : La génération des paires de villes se fait automatiquement.
+- Zobibi : Sélectionnez les régions pour chaque match, et les villes seront générées aléatoirement.
+- Visualisez les résultats directement dans l'interface.
