@@ -1,10 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\KpessekouController;
-use App\Http\Controllers\MatchController;
 use App\Http\Controllers\KpessekouMatchController;
-use App\Http\Controllers\MatchGeneratorController;
 use App\Http\Controllers\MatchZobibiController;
 
 
