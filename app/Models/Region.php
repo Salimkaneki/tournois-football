@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Region extends Model
 {
     //
-    protected $fillable = ['name', 'description'];
+    protected $fillable = [
+        'name',
+        'description'
+    ];
 
     public function cities()
     {
